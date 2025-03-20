@@ -182,8 +182,24 @@ uploadButton.addEventListener("click", async () => {
               alert("An error occurred while downloading the file.");
             }
           };
+          let downloadCommand = document.createElement("button");
+          downloadCommand.classList.add("file-curl");
+
+          const downCmd = `curl -X GET "${window.location.href}${file_dict[key]}"`;
+          downloadCommand.textContent = downCmd;
+          downloadCommand.addEventListener("click", () => {
+            navigator.clipboard.writeText(downCmd).then(() => {
+              fileCurl.classList.add("copied");
+              setTimeout(() => {
+                fileCurl.classList.add("fade-out");
+                setTimeout(() => fileCurl.classList.remove("copied", "fade-out"), 500);
+              }, 1000);
+            })
+            .catch(err => console.error("복사 실패:", err));
+          });
 
           downloadArea.appendChild(downloadButton);
+          downloadArea.appendChild(downloadCommand);
         }
         
       } else {

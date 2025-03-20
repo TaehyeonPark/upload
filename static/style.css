@@ -99,6 +99,26 @@ body {
     top: 5px;
 }
 
+.file-curl {
+  background-color: #c0c0c0;
+  transition: background-color 0.3s;
+}
+
+.file-curl:hover {
+  background-color: #909090;
+}
+
+.file-curl.copied {
+  background-color: #70c070;
+  color: white;
+}
+
+.file-curl.copied.fade-out {
+  background-color: #c0c0c0;
+  color: black;
+}
+
+
 button {
   margin-top: 20px;
   padding: 10px 20px;
