@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  upload:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50002:50002"
+    volumes:
+      - /mnt/upload:/mnt/upload
+    container_name: upload_service

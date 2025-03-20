@@ -23,7 +23,7 @@ def get_physicaldisk_size(physicaldisk_dir):
 
 def get_physicaldisk_file_name(physicaldisk_dir, prefix, postfix=".upload"):
     """
-    Lists all merged pdf files in the physicaldisk directory.
+    Lists all files in the physicaldisk directory.
 
     Args:
         physicaldisk_dir (str): Path to the physicaldisk directory.
@@ -41,7 +41,7 @@ def get_physicaldisk_file_name(physicaldisk_dir, prefix, postfix=".upload"):
 
 def get_physicaldisk_files(physicaldisk_dir, postfix=".upload"):
     """
-    Lists all merged pdf files in the physicaldisk directory.
+    Lists all files in the physicaldisk directory.
 
     Args:
         physicaldisk_dir (str): Path to the physicaldisk directory.
