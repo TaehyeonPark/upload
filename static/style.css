@@ -41,18 +41,38 @@ body {
 }
 
 .file-card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-  width: 100px;
-  cursor: grab;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 150px;
+  height: 100px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  cursor: grab;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+}
+
+.file-card.mouseover {
+  background-color: #ff7875;
+}
+
+.file-card.mouseout {
+  background-color: #ff4d4f;
+}
+
+.file-name {
+  word-break: break-word;
+  text-align: center;
+  margin: 5px 0;
+  font-size: 14px;
+  font-weight: bold;
+  max-width: 90%;
 }
 
 .file-card img {
@@ -61,19 +81,22 @@ body {
   display: block;
 }
 
-.file-card button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  padding: 12px 12px;
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 14px;
-  cursor: pointer;
+.file-remove {    
+    width: 90%;
+    height: 30px;
+    margin-top: 5px;
+    background-color: #ff4d4f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    position: absolute;
+    top: 5px;
 }
 
 button {

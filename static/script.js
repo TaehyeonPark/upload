@@ -2,7 +2,7 @@ const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("file-input");
 const selectFilesButton = document.getElementById("select-files");
 const fileList = document.getElementById("file-list");
-const mergeButton = document.getElementById("merge-files");
+const uploadButton = document.getElementById("upload-files");
 const loadingIndicator = document.getElementById("loading");
 
 let files = [];
@@ -14,60 +14,19 @@ async function createPreview(fileObj) {
   card.draggable = true;
   card.dataset.uuid = uuid;
 
-  const CARD_WIDTH = 150;
-  const CARD_HEIGHT = 100;
-  card.style.display = "flex";
-  card.style.flexDirection = "column";
-  card.style.alignItems = "center";
-  card.style.justifyContent = "flex-end";
-  card.style.gap = "8px";
-  card.style.width = `${CARD_WIDTH}px`;
-  card.style.height = `${CARD_HEIGHT}px`;
-  card.style.padding = "10px";
-  card.style.border = "1px solid #ddd";
-  card.style.borderRadius = "8px";
-  card.style.backgroundColor = "#f9f9f9";
-  card.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
-  card.style.textAlign = "center";
-
   try {
     const name = document.createElement("p");
+    name.classList.add("file-name");
     name.textContent = file.name;
-    name.style.wordBreak = "break-word";
-    name.style.textAlign = "center";
-    name.style.margin = "5px 0";
-    name.style.fontSize = "14px";
-    name.style.fontWeight = "bold";
-    name.style.maxWidth = "90%";
 
     const removeButton = document.createElement("button");
+    removeButton.classList.add("file-remove");
     removeButton.textContent = "Remove File";
-    removeButton.style.width = "90%";
-    removeButton.style.height = "30px";
-    removeButton.style.marginTop = "5px";
-    removeButton.style.backgroundColor = "#ff4d4f";
-    removeButton.style.color = "#fff";
-    removeButton.style.border = "none";
-    removeButton.style.borderRadius = "5px";
-    removeButton.style.cursor = "pointer";
-    removeButton.style.fontSize = "14px";
-    removeButton.style.display = "flex";
-    removeButton.style.justifyContent = "center";
-    removeButton.style.alignItems = "center";
-    removeButton.style.padding = "0";
-
-    removeButton.addEventListener("mouseover", () => {
-      removeButton.style.backgroundColor = "#ff7875";
-    });
-
-    removeButton.addEventListener("mouseout", () => {
-      removeButton.style.backgroundColor = "#ff4d4f";
-    });
 
     removeButton.addEventListener("click", () => {
       files = files.filter((f) => f.uuid !== uuid);
       card.remove();
-      mergeButton.disabled = files.length <= 1;
+      uploadButton.disabled = files.length <= 0;
     });
 
     card.addEventListener("dragstart", (e) => {
@@ -114,7 +73,7 @@ async function createPreview(fileObj) {
     card.appendChild(removeButton);
     fileList.appendChild(card);
   } catch (error) {
-    console.error("Error rendering PDF preview:", error);
+    console.error("Error rendering preview:", error);
     alert(`Failed to render preview for file: ${file.name}`);
   }
 }
@@ -145,7 +104,7 @@ async function handleFiles(selectedFiles) {
   files = files.concat(newFiles);
 
   newFiles.forEach(createPreview);
-  mergeButton.disabled = files.length <= 1;
+  uploadButton.disabled = files.length <= 0;
 }
 
 dropZone.addEventListener("dragover", (e) => {
@@ -167,13 +126,13 @@ selectFilesButton.addEventListener("click", () => fileInput.click());
 
 fileInput.addEventListener("change", () => handleFiles(fileInput.files));
 
-mergeButton.addEventListener("click", async () => {
-  if (files.length < 2) {
-    alert("Too few files. Minimum allowed is 2.");
+uploadButton.addEventListener("click", async () => {
+  if (files.length < 1) {
+    alert("Too few file(s). Minimum allowed is 1.");
     return;
   }
 
-  mergeButton.disabled = true;
+  uploadButton.disabled = true;
   loadingIndicator.style.display = "block";
 
   const orderedFiles = Array.from(fileList.children).map((child) => {
@@ -185,7 +144,7 @@ mergeButton.addEventListener("click", async () => {
   orderedFiles.forEach((fileObj) => formData.append("files", fileObj.file));
 
   try {
-    const response = await fetch("/merge", {
+    const response = await fetch("/upload", {
       method: "POST",
       body: formData,
     });
@@ -193,41 +152,42 @@ mergeButton.addEventListener("click", async () => {
     if (response.ok) {
       const data = await response.json();
       const { file } = data;
-
       if (file) {
-        let downloadButton = document.getElementById("download-button");
-
-        if (!downloadButton) {
-          downloadButton = document.createElement("button");
+        const file_dict = JSON.parse(file);
+        let downloadArea = document.getElementById("download-area");
+        downloadArea.innerHTML = "";
+        for (const key in file_dict) {
+          let downloadButton = document.createElement("button");
           downloadButton.id = "download-button";
           downloadButton.classList.add("download-button");
-          downloadButton.textContent = "Download Merged File";
-          document.getElementById("download-area").appendChild(downloadButton); // download-area에 추가
-        }
-
-        downloadButton.onclick = async () => {
-          try {
-            const response = await fetch(`/download/${file}`, {
-              method: "GET",
-            });
-
-            if (response.ok) {
-              const blob = await response.blob();
-              const url = URL.createObjectURL(blob);
-              const tempLink = document.createElement("a");
-              tempLink.href = url;
-              tempLink.download = file;
-              tempLink.click();
-              URL.revokeObjectURL(url);
-            } else {
-              alert("Failed to download the file.");
+          downloadButton.textContent = `Download ${key}`;
+          downloadButton.onclick = async () => {
+            try {
+              const response = await fetch(`/download/${file_dict[key]}`, {
+                method: "GET",
+              });
+  
+              if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const tempLink = document.createElement("a");
+                tempLink.href = url;
+                tempLink.download = file;
+                tempLink.click();
+                URL.revokeObjectURL(url);
+              } else {
+                alert("Failed to download the file.");
+              }
+            } catch (error) {
+              alert("An error occurred while downloading the file.");
             }
-          } catch (error) {
-            alert("An error occurred while downloading the file.");
-          }
-        };
+          };
+
+          downloadArea.appendChild(downloadButton);
+        }
+        
       } else {
-        alert("Failed to merge PDFs.");
+        alert("Failed to upload file(s).");
       }
     } else {
       alert("Server returned an error.");
@@ -236,6 +196,6 @@ mergeButton.addEventListener("click", async () => {
     alert("An error occurred.");
   } finally {
     loadingIndicator.style.display = "none";
-    mergeButton.disabled = false;
+    uploadButton.disabled = false;
   }
 });

@@ -5,47 +5,65 @@ from logging.handlers import RotatingFileHandler
 import gzip
 
 
-def get_ramdisk_size(ramdisk_dir):
+def get_physicaldisk_size(physicaldisk_dir):
     """
-    Calculate the total size of all files in the RAMDisk directory.
+    Calculate the total size of all files in the physicaldisk directory.
 
     Args:
-        ramdisk_dir (str): Path to the RAMDisk directory.
+        physicaldisk_dir (str): Path to the physicaldisk directory.
 
     Returns:
         int: Total size in bytes.
     """
     total_size = 0
-    for file in os.listdir(ramdisk_dir):
-        total_size += os.path.getsize(os.path.join(ramdisk_dir, file))
+    for file in os.listdir(physicaldisk_dir):
+        total_size += os.path.getsize(os.path.join(physicaldisk_dir, file))
     return total_size
 
 
-def get_ramdisk_files(ramdisk_dir, postfix="merged.pdf"):
+def get_physicaldisk_file_name(physicaldisk_dir, prefix, postfix=".upload"):
     """
-    Lists all merged pdf files in the RAMDisk directory.
+    Lists all merged pdf files in the physicaldisk directory.
 
     Args:
-        ramdisk_dir (str): Path to the RAMDisk directory.
+        physicaldisk_dir (str): Path to the physicaldisk directory.
+        prefix (str): Pseudo prefix hashcode.
+
+    Returns:
+        int: Total size in bytes.
+    """
+    for file in os.listdir(physicaldisk_dir):
+        if prefix != file[:len(prefix)] or postfix != file[-len(postfix):]:
+            continue
+        return file
+    return None
+
+
+def get_physicaldisk_files(physicaldisk_dir, postfix=".upload"):
+    """
+    Lists all merged pdf files in the physicaldisk directory.
+
+    Args:
+        physicaldisk_dir (str): Path to the physicaldisk directory.
 
     Returns:
         int: Total size in bytes.
     """
     total_files = []
-    for file in os.listdir(ramdisk_dir):
+    for file in os.listdir(physicaldisk_dir):
         if postfix != file[-len(postfix):]:
             continue
         total_files.append(file)
     return total_files
 
 
-def enforce_ramdisk_limit(ramdisk_dir, max_ramdisk_size, timeout=5, postfix="merged.pdf"):
+def enforce_physicaldisk_limit(physicaldisk_dir, max_physicaldisk_size, timeout=5, postfix=".upload"):
     """
-    Enforce the RAMDisk size limit by removing the oldest files (FIFO) with a timeout.
+    Enforce the physicaldisk size limit by removing the oldest files (FIFO) with a timeout.
 
     Args:
-        ramdisk_dir (str): Path to the RAMDisk directory.
-        max_ramdisk_size (int): Maximum allowed size of RAMDisk in bytes.
+        physicaldisk_dir (str): Path to the physicaldisk directory.
+        max_physicaldisk_size (int): Maximum allowed size of physicaldisk in bytes.
         uploaded_files (dict): Dictionary tracking file metadata (timestamp and size).
         timeout (int): Maximum time in seconds to enforce the limit.
 
@@ -53,29 +71,29 @@ def enforce_ramdisk_limit(ramdisk_dir, max_ramdisk_size, timeout=5, postfix="mer
         TimeoutError: If the limit cannot be enforced within the timeout.
     """
     start_time = time.time()
-    total_files = get_ramdisk_files(ramdisk_dir, postfix)
+    total_files = get_physicaldisk_files(physicaldisk_dir, postfix)
     total_files.sort(key=lambda x: x.split('-')[1])
-    while get_ramdisk_size(ramdisk_dir) > max_ramdisk_size:
+    while get_physicaldisk_size(physicaldisk_dir) > max_physicaldisk_size:
         if time.time() - start_time > timeout:
             raise TimeoutError(
-                "Timeout exceeded while enforcing RAMDisk size limit.")
+                "Timeout exceeded while enforcing physicaldisk size limit.")
 
         oldest_file = total_files[0]
-        os.remove(os.path.join(ramdisk_dir, oldest_file))
+        os.remove(os.path.join(physicaldisk_dir, oldest_file))
         del total_files[0]
 
 
-def schedule_file_deletion(ramdisk_dir, file_name, delay=300):
+def schedule_file_deletion(physicaldisk_dir, file_name, delay=300):
     """
     Schedule a file to be deleted after a given delay.
 
     Args:
-        ramdisk_dir (str): Path to the RAMDisk directory.
+        physicaldisk_dir (str): Path to the physicaldisk directory.
         file_name (str): Name of the file to delete.
         delay (int): Time in seconds before the file is deleted.
     """
     time.sleep(delay)
-    file_path = os.path.join(ramdisk_dir, file_name)
+    file_path = os.path.join(physicaldisk_dir, file_name)
     if os.path.exists(file_path):
         os.remove(file_path)
 
